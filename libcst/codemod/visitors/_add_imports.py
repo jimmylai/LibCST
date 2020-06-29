@@ -362,34 +362,39 @@ class AddImportsVisitor(ContextAwareTransformer):
                     for module, aliases in module_and_alias_mapping.items()
                     if module == "__future__"
                 ],
-                *statements_before_imports,
-                *[
-                    parse_statement(
-                        f"import {module}", config=updated_node.config_for_parsing
-                    )
-                    for module in sorted(self.module_imports)
-                ],
-                *[
-                    parse_statement(
-                        f"import {module} as {asname}",
-                        config=updated_node.config_for_parsing,
-                    )
-                    for (module, asname) in self.module_aliases.items()
-                ],
-                *[
-                    parse_statement(
-                        f"from {module} import "
-                        + ", ".join(
-                            [
-                                obj if alias is None else f"{obj} as {alias}"
-                                for (obj, alias) in aliases
-                            ]
-                        ),
-                        config=updated_node.config_for_parsing,
-                    )
-                    for module, aliases in module_and_alias_mapping.items()
-                    if module != "__future__"
-                ],
-                *statements_after_imports,
+                *self._insert_empty_line(
+                    [
+                        *statements_before_imports,
+                        *[
+                            parse_statement(
+                                f"import {module}",
+                                config=updated_node.config_for_parsing,
+                            )
+                            for module in sorted(self.module_imports)
+                        ],
+                        *[
+                            parse_statement(
+                                f"import {module} as {asname}",
+                                config=updated_node.config_for_parsing,
+                            )
+                            for (module, asname) in self.module_aliases.items()
+                        ],
+                        *[
+                            parse_statement(
+                                f"from {module} import "
+                                + ", ".join(
+                                    [
+                                        obj if alias is None else f"{obj} as {alias}"
+                                        for (obj, alias) in aliases
+                                    ]
+                                ),
+                                config=updated_node.config_for_parsing,
+                            )
+                            for module, aliases in module_and_alias_mapping.items()
+                            if module != "__future__"
+                        ],
+                        *statements_after_imports,
+                    ]
+                ),
             )
         )

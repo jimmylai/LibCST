@@ -34,3 +34,14 @@ class EnsureImportPresentCommandTest(CodemodTest):
         before = ""
         after = "from a import b as c"
         self.assertCodemod(before, after, module="a", entity="b", alias="c")
+
+    def test_import_future(self) -> None:
+        before = "from a import b"
+        after = """
+            from __future__ import annotations
+
+            from a import b
+        """
+        self.assertCodemod(
+            before, after, module="__future__", entity="annotations", alias=None
+        )
